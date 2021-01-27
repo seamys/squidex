@@ -7,9 +7,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FakeItEasy;
 using GraphQL.DataLoader;
+using HotChocolate.Execution;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Squidex.Domain.Apps.Core;
@@ -18,6 +21,9 @@ using Squidex.Domain.Apps.Core.TestHelpers;
 using Squidex.Domain.Apps.Entities.Apps;
 using Squidex.Domain.Apps.Entities.Assets;
 using Squidex.Domain.Apps.Entities.Contents.GraphQL.Types;
+using Squidex.Domain.Apps.Entities.Contents.GraphQL2;
+using Squidex.Domain.Apps.Entities.Contents.GraphQL2.Serialization;
+using Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types;
 using Squidex.Domain.Apps.Entities.Contents.TestData;
 using Squidex.Domain.Apps.Entities.Schemas;
 using Squidex.Domain.Apps.Entities.TestHelpers;
@@ -134,9 +140,43 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             Assert.Equal(expectJson, resultJson);
         }
 
+        protected void AssertResult(object expected, string resultJson)
+        {
+            var expectJson = serializer.Serialize(expected, true);
+
+            Assert.Equal(expectJson, resultJson);
+        }
+
         private string Serialize((bool HasErrors, object Response) result)
         {
             return serializer.Serialize(result);
+        }
+
+        protected async Task<string> ExecuteQueryAsync(string query)
+        {
+            var builder = new GraphQLSchemaBuilder(app, new List<ISchemaEntity>
+            {
+                schemaRef1,
+                schemaRef2,
+                schema
+            });
+
+            var executor = await new ServiceCollection()
+                .AddSingleton(assetQuery)
+                .AddSingleton<IUrlGenerator>(new FakeUrlGenerator())
+                .AddGraphQL()
+                .ConfigureTypes()
+                .ConfigureSchema(x => builder.BuildSchema(x))
+                .Services
+                .BuildServiceProvider()
+                .GetRequiredService<IRequestExecutorResolver>()
+                .GetRequestExecutorAsync();
+
+            var responseSerializer = new JsonNetQueryResultSerializer(TestUtils.DefaultSerializerSettings);
+
+            var result = executor.ExecuteAsync(b => b.SetQuery(query).SetProperty("requestContext", requestContext)).Result;
+
+            return await responseSerializer.SerializeToStringAsync((result as IReadOnlyQueryResult)!);
         }
 
         public sealed class TestServiceProvider : IServiceProvider

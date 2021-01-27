@@ -23,7 +23,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
         [InlineData(" ")]
         public async Task Should_return_empty_object_for_empty_query(string query)
         {
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -32,7 +32,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => assetQuery.QueryAsync(MatchsAssetContext(), null, A<Q>.That.HasOData("?$top=30&$skip=5&$filter=my-query")))
                 .Returns(ResultList.CreateFrom(0, asset));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -63,7 +63,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => assetQuery.QueryAsync(MatchsAssetContext(), null, A<Q>.That.HasOData("?$top=30&$skip=5&$filter=my-query")))
                 .Returns(ResultList.CreateFrom(10, asset));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -101,7 +101,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => assetQuery.QueryAsync(MatchsAssetContext(), null, A<Q>.That.HasIds(assetId)))
                 .Returns(ResultList.CreateFrom<IEnrichedAssetEntity>(1));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -129,7 +129,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => assetQuery.QueryAsync(MatchsAssetContext(), null, A<Q>.That.HasIds(assetId)))
                 .Returns(ResultList.CreateFrom(1, asset));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -158,7 +158,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), schemaId.Id.ToString(), A<Q>.That.HasOData("?$top=30&$skip=5")))
                 .Returns(ResultList.CreateFrom(0, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -259,7 +259,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -277,7 +277,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), schemaId.Id.ToString(), A<Q>.That.HasOData("?$top=30&$skip=5")))
                 .Returns(ResultList.CreateFrom(0, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -290,7 +290,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -311,7 +311,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), schemaId.Id.ToString(), A<Q>.That.HasOData("?$top=30&$skip=5")))
                 .Returns(ResultList.CreateFrom(10, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -328,7 +328,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -346,7 +346,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), A<Q>.That.HasIds(contentId)))
                 .Returns(ResultList.CreateFrom<IEnrichedContentEntity>(1));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -356,7 +356,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -375,7 +375,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), A<Q>.That.HasIds(contentId)))
                 .Returns(ResultList.CreateFrom(1, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -385,7 +385,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -404,7 +404,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.FindAsync(MatchsContentContext(), schemaId.Id.ToString(), contentId, 3))
                 .Returns(content);
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -414,7 +414,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -451,7 +451,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), A<Q>.That.HasIds(contentId)))
                 .Returns(ResultList.CreateFrom(1, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -484,7 +484,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -517,7 +517,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), content.SchemaId.Id.ToString(), A<Q>.That.HasOData("?$top=30&$skip=5", contentRefId)))
                 .Returns(ResultList.CreateFrom(1, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -544,7 +544,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -580,7 +580,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), content.SchemaId.Id.ToString(), A<Q>.That.HasOData("?$top=30&$skip=5", contentRefId)))
                 .Returns(ResultList.CreateFrom(1, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -611,7 +611,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -653,7 +653,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), A<Q>.That.HasIds(contentId)))
                 .Returns(ResultList.CreateFrom(1, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -687,7 +687,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -719,7 +719,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => assetQuery.QueryAsync(MatchsAssetContext(), null, A<Q>._))
                 .Returns(ResultList.CreateFrom(0, assetRef));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
+            var json = await ExecuteQueryAsync(query);
 
             var expected = new
             {
@@ -745,63 +745,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 }
             };
 
-            AssertResult(expected, result);
-        }
-
-        [Fact]
-        public async Task Should_make_multiple_queries()
-        {
-            var assetId1 = DomainId.NewGuid();
-            var assetId2 = DomainId.NewGuid();
-            var asset1 = TestAsset.Create(appId, assetId1);
-            var asset2 = TestAsset.Create(appId, assetId2);
-
-            var query1 = @"
-                query {
-                  findAsset(id: ""<ID>"") {
-                    id
-                  }
-                }".Replace("<ID>", assetId1.ToString());
-            var query2 = @"
-                query {
-                  findAsset(id: ""<ID>"") {
-                    id
-                  }
-                }".Replace("<ID>", assetId2.ToString());
-
-            A.CallTo(() => assetQuery.QueryAsync(MatchsAssetContext(), null, A<Q>.That.HasIds(assetId1)))
-                .Returns(ResultList.CreateFrom(0, asset1));
-
-            A.CallTo(() => assetQuery.QueryAsync(MatchsAssetContext(), null, A<Q>.That.HasIds(assetId2)))
-                .Returns(ResultList.CreateFrom(0, asset2));
-
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query1 }, new GraphQLQuery { Query = query2 });
-
-            var expected = new object[]
-            {
-                new
-                {
-                    data = new
-                    {
-                        findAsset = new
-                        {
-                            id = asset1.Id
-                        }
-                    }
-                },
-                new
-                {
-                    data = new
-                    {
-                        findAsset = new
-                        {
-                            id = asset2.Id
-                        }
-                    }
-                }
-            };
-
-            AssertResult(expected, result);
+            AssertResult(expected, json);
         }
 
         [Fact]
@@ -831,9 +775,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             A.CallTo(() => contentQuery.QueryAsync(MatchsContentContext(), A<Q>.That.HasIds(contentId)))
                 .Returns(ResultList.CreateFrom(1, content));
 
-            var result = await sut.QueryAsync(requestContext, new GraphQLQuery { Query = query });
-
-            var json = serializer.Serialize(result);
+            var json = await ExecuteQueryAsync(query);
 
             Assert.Contains("\"data\":null", json);
         }
