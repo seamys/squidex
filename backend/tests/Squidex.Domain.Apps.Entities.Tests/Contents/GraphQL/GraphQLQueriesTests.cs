@@ -17,24 +17,6 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
 {
     public class GraphQLQueriesTests : GraphQLTestBase
     {
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public async Task Should_return_empty_object_for_empty_query(string query)
-        {
-            var json = await ExecuteQueryAsync(query);
-
-            var expected = new
-            {
-                data = new
-                {
-                }
-            };
-
-            AssertResult(expected, json);
-        }
-
         [Fact]
         public async Task Should_return_multiple_assets_when_querying_assets()
         {
@@ -211,9 +193,9 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                         {
                             id = content.Id,
                             version = 1,
-                            created = content.Created,
+                            created = content.Created.ToGraphQL(),
                             createdBy = "subject:user1",
-                            lastModified = content.LastModified,
+                            lastModified = content.LastModified.ToGraphQL(),
                             lastModifiedBy = "subject:user2",
                             status = "DRAFT",
                             statusColor = "red",
@@ -221,9 +203,9 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                             flatData = new
                             {
                                 myString = "value",
-                                myNumber = 1,
+                                myNumber = 1.0,
                                 myBoolean = true,
-                                myDatetime = content.LastModified,
+                                myDatetime = content.LastModified.ToGraphQL(),
                                 myJsonValue = 1,
                                 myJson = new
                                 {
@@ -244,12 +226,12 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                                 {
                                     new
                                     {
-                                        nestedNumber = 10,
+                                        nestedNumber = 10.0,
                                         nestedBoolean = true
                                     },
                                     new
                                     {
-                                        nestedNumber = 20,
+                                        nestedNumber = 20.0,
                                         nestedBoolean = false
                                     }
                                 }
@@ -777,7 +759,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
 
             var json = await ExecuteQueryAsync(query);
 
-            Assert.Contains("\"data\":null", json);
+            Assert.Contains("errors", json);
         }
 
         private Context MatchsAssetContext()

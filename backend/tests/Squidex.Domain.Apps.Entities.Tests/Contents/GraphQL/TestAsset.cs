@@ -5,10 +5,8 @@
 //  All rights reserved. Licensed under the MIT license.
 // ==========================================================================
 
-using System.Globalization;
 using System.Linq;
 using NodaTime;
-using NodaTime.Text;
 using Squidex.Domain.Apps.Core.Assets;
 using Squidex.Domain.Apps.Entities.Assets;
 using Squidex.Infrastructure;
@@ -85,10 +83,10 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             {
                 id = asset.Id,
                 version = asset.Version,
-                created = asset.Created.ToString("uuuu'-'MM'-'dd'T'HH':'mm':'ss;FFF'Z'", CultureInfo.InvariantCulture),
-                createdBy = asset.CreatedBy.ToString(),
-                lastModified = asset.LastModified.ToString("uuuu'-'MM'-'dd'T'HH':'mm':'ss;FFF'Z'", CultureInfo.InvariantCulture),
-                lastModifiedBy = asset.LastModifiedBy.ToString(),
+                created = asset.Created.ToGraphQL(),
+                createdBy = asset.CreatedBy,
+                lastModified = asset.LastModified.ToGraphQL(),
+                lastModifiedBy = asset.LastModifiedBy,
                 url = $"assets/{asset.AppId.Name}/{asset.Id}",
                 thumbnailUrl = $"assets/{asset.AppId.Name}/{asset.Id}?width=100",
                 sourceUrl = $"assets/source/{asset.Id}",

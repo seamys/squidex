@@ -163,6 +163,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
 
             var executor = await new ServiceCollection()
                 .AddSingleton(assetQuery)
+                .AddSingleton(contentQuery)
                 .AddSingleton<IUrlGenerator>(new FakeUrlGenerator())
                 .AddGraphQL()
                 .ConfigureTypes()
@@ -174,7 +175,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
 
             var responseSerializer = new JsonNetQueryResultSerializer(TestUtils.DefaultSerializerSettings);
 
-            var result = executor.ExecuteAsync(b => b.SetQuery(query).SetProperty("requestContext", requestContext)).Result;
+            var result = executor.ExecuteAsync(b => b.SetQuery(query).SetProperty("RequestContext", requestContext)).Result;
 
             return await responseSerializer.SerializeToStringAsync((result as IReadOnlyQueryResult)!);
         }

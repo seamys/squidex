@@ -10,6 +10,7 @@ using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Squidex.Domain.Apps.Core;
 using Squidex.Domain.Apps.Entities.Assets;
+using Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Scalars;
 using Squidex.Infrastructure;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Assets
@@ -18,11 +19,10 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Assets
     {
         private readonly IUrlGenerator urlGenerator;
 
-        /*
         public AssetType(IUrlGenerator urlGenerator)
         {
             this.urlGenerator = urlGenerator;
-        }*/
+        }
 
         protected override void Configure(IObjectTypeDescriptor<IEnrichedAssetEntity> descriptor)
         {
@@ -105,26 +105,25 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Assets
                 .Type<NonNullType<StringType>>()
                 .Description("The thumbnail url to the asset.");
 
-            descriptor.Field("metadata").Resolve(Metadata)
-                .Type<AnyJson>().Argument("path", arg => arg.Type<StringType>())
-                .Description("The asset metadata.");
-
             descriptor.Field("isImage").Resolve(Resolver(x => x.Type == Core.Assets.AssetType.Image))
                 .Type<NonNullType<BooleanType>>()
-                .Description("Determines if the uploaded file is an image.")
-                .Deprecated("Use 'type' field instead.");
+                .Description("Determines if the uploaded file is an image.");
 
             descriptor.Field("pixelHeight").Resolve(Resolver(x => x.Metadata.GetPixelHeight()))
                 .Type<IntType>()
-                .Description("The height of the image in pixels if the asset is an image.")
-                .Deprecated("Use 'metadata' field instead.");
+                .Description("The height of the image in pixels if the asset is an image.");
 
             descriptor.Field("pixelWidth").Resolve(Resolver(x => x.Metadata.GetPixelWidth()))
                 .Type<IntType>()
-                .Description("The width of the image in pixels if the asset is an image.")
-                .Deprecated("Use 'metadata' field instead.");
+                .Description("The width of the image in pixels if the asset is an image.");
 
-            if (urlGenerator?.CanGenerateAssetSourceUrl == true)
+            descriptor.Field("metadata").Resolve(Metadata)
+                .Type<AnyJsonType>().Argument("path", arg => arg
+                    .Type<StringType>()
+                    .Description("The optional path in the metadata object."))
+                .Description("The asset metadata.");
+
+            if (urlGenerator.CanGenerateAssetSourceUrl)
             {
                 descriptor.Field("sourceUrl").Resolve(SourceUrl)
                     .Type<NonNullType<StringType>>()
@@ -159,7 +158,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Assets
 
             if (!string.IsNullOrWhiteSpace(path))
             {
-                asset.Metadata.TryGetByPath(path as string, out var result);
+                asset.Metadata.TryGetByPath(path, out var result);
 
                 return result;
             }

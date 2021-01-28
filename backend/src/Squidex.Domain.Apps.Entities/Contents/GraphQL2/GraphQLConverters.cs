@@ -6,11 +6,14 @@
 // ==========================================================================
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using HotChocolate.Execution.Configuration;
 using HotChocolate.Types;
+using HotChocolate.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using Squidex.Infrastructure;
+using Squidex.Infrastructure.Json.Objects;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2
 {
@@ -42,7 +45,61 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2
             builder.AddTypeConverter<RefToken, string>(
                 x => x.ToString());
 
+            builder.AddTypeConverter<TypeConverter>();
+
             return builder;
+        }
+
+        public sealed class TypeConverter : IChangeTypeProvider
+        {
+            private static readonly ChangeType ConvertJsonNull =
+                x => null;
+            private static readonly ChangeType ConvertJsonNumber =
+                x => ((JsonNumber)x!).Value;
+            private static readonly ChangeType ConvertJsonBoolean =
+                x => ((JsonBoolean)x!).Value;
+            private static readonly ChangeType ConvertJsonString =
+                x => ((JsonString)x!).Value;
+            private static readonly ChangeType ConvertJsonStringToDateTimeOffset =
+                x => DateTimeOffset.Parse(((JsonString)x!).Value);
+
+            public bool TryCreateConverter(Type source, Type target, ChangeTypeProvider root, [NotNullWhen(true)] out ChangeType? converter)
+            {
+                if (source == typeof(JsonString))
+                {
+                    if (target == typeof(DateTimeOffset))
+                    {
+                        converter = ConvertJsonStringToDateTimeOffset;
+                    }
+                    else
+                    {
+                        converter = ConvertJsonString;
+                    }
+
+                    return true;
+                }
+
+                if (source == typeof(JsonBoolean))
+                {
+                    converter = ConvertJsonBoolean;
+                    return true;
+                }
+
+                if (source == typeof(JsonNumber))
+                {
+                    converter = ConvertJsonNumber;
+                    return true;
+                }
+
+                if (source == typeof(JsonNull))
+                {
+                    converter = ConvertJsonNull;
+                    return true;
+                }
+
+                converter = null;
+                return false;
+            }
         }
     }
 }

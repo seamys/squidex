@@ -6,95 +6,119 @@
 // ==========================================================================
 
 using System.Collections.Generic;
+using HotChocolate.Language;
+using HotChocolate.Resolvers;
 using HotChocolate.Types;
+using Squidex.Domain.Apps.Entities.Assets;
 using Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Assets;
 using Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents;
-using Squidex.Domain.Apps.Entities.Schemas;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types
 {
-    public class QueryType : ObjectType<Query>
+    public class QueryType : ObjectType
     {
-        private readonly GraphQLSchemaBuilder builder;
-        private readonly IEnumerable<ISchemaEntity> schemas;
+        private readonly IEnumerable<SchemaType> schemas;
 
-        public QueryType()
+        public QueryType(IEnumerable<SchemaType> schemas)
         {
+            this.schemas = schemas;
         }
 
-        /*
-        public QueryType(GraphQLSchemaBuilder builder, IEnumerable<ISchemaEntity> schemas)
-        {
-            this.builder = builder;
-            this.schemas = schemas;
-        }*/
-
-        protected override void Configure(IObjectTypeDescriptor<Query> descriptor)
+        protected override void Configure(IObjectTypeDescriptor descriptor)
         {
             ConfigureAssets(descriptor);
-/*
+
             foreach (var schema in schemas)
             {
-                // ConfigureSchema(descriptor, schema);
-            }*/
+                ConfigureSchema(descriptor, schema);
+            }
         }
 
-        private void ConfigureSchema(IObjectTypeDescriptor<Query> descriptor, ISchemaEntity schema)
+        private static void ConfigureSchema(IObjectTypeDescriptor descriptor, SchemaType schemaType)
         {
-            var schemaId = schema.Id;
-            var schemaType = schema.TypeName();
-            var schemaName = schema.DisplayName();
+            var schemaId = schemaType.Schema.Id.ToString();
 
-            var contentType = builder.GetContentType(schema.Id);
-
-            descriptor.Field($"find{schemaType}Content")
-                .ResolveWith<Query>(x => x.FindContentAsync(default!, default!, default!))
-                .Type(contentType)
-                .ConfigureContextData(data => data.Add("schemaId", schemaId))
-                .Argument("id", arg => arg
-                    .Type<NonNullType<StringType>>()
-                    .Description("The id of the content"))
+            descriptor.Field($"find{schemaType.TypeName}Content").Resolve(FindContent)
+                .Type(new NamedTypeNode(schemaType.ContentType))
+                .UseSchemaId(schemaId)
+                .UseId()
                 .Argument("version", arg => arg
                     .Type<IntType>()
                     .Description("The version of the content"))
-                .Description($"Find an {schemaName} content by id.");
+                .Description($"Find an {schemaType.DisplayName} content by id.");
 
-            descriptor.Field($"query{schemaType}Contents")
-                .ResolveWith<Query>(x => x.QueryAssetsAsync(default!, default!))
-                .Type(new NonNullType(new ListType(new NonNullType(contentType))))
-                .ConfigureContextData(data => data.Add("schemaId", schemaId))
-                .WithODataArgs()
+            descriptor.Field($"query{schemaType.TypeName}Contents").Resolve(QueryContents)
+                .Type(new NonNullTypeNode(new ListTypeNode(new NonNullTypeNode(new NamedTypeNode(schemaType.ContentType)))))
+                .UseSchemaId(schemaId)
+                .UseODataArgs()
                 .Description("Query assets.");
 
-            descriptor.Field($"query{schemaType}ContentsWithTotal")
-                .ResolveWith<Query>(x => x.QueryAssetsAsync(default!, default!))
-                .Type(new NonNullType(new ContentResultType(schemaName, schemaType, contentType)))
-                .ConfigureContextData(data => data.Add("schemaId", schemaId))
-                .WithODataArgs()
-                .Description($"Query {schemaName} content items with total count.");
+            descriptor.Field($"query{schemaType.TypeName}ContentsWithTotal").Resolve(QueryContents)
+                .Type(new NonNullTypeNode(new NamedTypeNode(schemaType.ResultType)))
+                .UseSchemaId(schemaId)
+                .UseODataArgs()
+                .Description($"Query {schemaType.TypeName} content items with total count.");
         }
 
-        private static void ConfigureAssets(IObjectTypeDescriptor<Query> descriptor)
+        private static void ConfigureAssets(IObjectTypeDescriptor descriptor)
         {
-            descriptor.Field("findAsset")
-                .ResolveWith<Query>(x => x.FindAssetAsync(default!, default!))
+            descriptor.Field("findAsset").Resolve(FindAsset)
                 .Type<AssetType>()
-                .Argument("id", arg => arg
-                    .Type<NonNullType<StringType>>()
-                    .Description("The id of the asset"))
+                .UseId()
                 .Description("Find an asset by id");
 
-            descriptor.Field("queryAssets")
-                .ResolveWith<Query>(x => x.QueryAssetsAsync(default!, default!))
+            descriptor.Field("queryAssets").Resolve(QueryAssets)
                 .Type<NonNullType<ListType<NonNullType<AssetType>>>>()
-                .WithODataArgs()
+                .UseODataArgs()
                 .Description("Query assets.");
 
-            descriptor.Field("queryAssetsWithTotal")
-                .ResolveWith<Query>(x => x.QueryAssetsAsync(default!, default!))
+            descriptor.Field("queryAssetsWithTotal").Resolve(QueryAssets)
                 .Type<NonNullType<AssetResultType>>()
-                .WithODataArgs()
+                .UseODataArgs()
                 .Description("Query assets with the total count.");
         }
+
+        private static readonly FieldResolverDelegate FindAsset = async context =>
+        {
+            var dataLoader = context.AssetDataLoader();
+
+            return await dataLoader.LoadAsync(context.Id(), default);
+        };
+
+        private static readonly FieldResolverDelegate FindContent = async context =>
+        {
+            var version = context.ArgumentValue<int?>("version");
+
+            if (version.HasValue)
+            {
+                var contentQuery = context.Service<IContentQueryService>();
+
+                return await contentQuery.FindAsync(context.RequestContext(), context.SchemaId(), context.Id(), version.Value);
+            }
+            else
+            {
+                var dataLoader = context.ContentDataLoader();
+
+                return await dataLoader.LoadAsync(context.Id(), default);
+            }
+        };
+
+        private static readonly FieldResolverDelegate QueryAssets = async context =>
+        {
+            var assetQuery = context.Service<IAssetQueryService>();
+
+            var q = Q.Empty.WithODataQuery(context.BuildODataQuery());
+
+            return await assetQuery.QueryAsync(context.RequestContext(), null, q);
+        };
+
+        private static readonly FieldResolverDelegate QueryContents = async context =>
+        {
+            var contentQuery = context.Service<IContentQueryService>();
+
+            var q = Q.Empty.WithODataQuery(context.BuildODataQuery());
+
+            return await contentQuery.QueryAsync(context.RequestContext(), context.SchemaId(), q);
+        };
     }
 }

@@ -9,13 +9,13 @@ using System;
 using HotChocolate.Language;
 using HotChocolate.Types;
 
-namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types
+namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Scalars
 {
-    public sealed class AnyJson : ScalarType
+    public sealed class AnyJsonType : ScalarType
     {
         public override Type RuntimeType => typeof(object);
 
-        public AnyJson()
+        public AnyJsonType()
             : base("Json")
         {
         }

@@ -11,29 +11,12 @@ using HotChocolate.Types;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Scalars
 {
-    public sealed class NoopType : ScalarType
+    public abstract class NoopType : ScalarType
     {
-        /*
-        public static readonly IOutputType Any = new NoopType(new AnyType());
-        public static readonly IOutputType NonNullAny = new NonNullType(new NoopType(new AnyType()));
-
-        public static readonly IOutputType Boolean = new NoopType(new BooleanType());
-        public static readonly IOutputType NonNullBoolean = new NonNullType(new NoopType(new BooleanType()));
-
-        public static readonly IOutputType DateTime = new NoopType(new DateTimeType());
-        public static readonly IOutputType NonNullDateTime = new NonNullType(new NoopType(new DateTimeType()));
-
-        public static readonly IOutputType Float = new NoopType(new FloatType());
-        public static readonly IOutputType NonNullFloat = new NonNullType(new NoopType(new FloatType()));
-
-        public static readonly IOutputType String = new NoopType(new StringType());
-        public static readonly IOutputType NonNullString = new NonNullType(new NoopType(new StringType()));
-        */
-
         public override Type RuntimeType => typeof(object);
 
-        public NoopType(TypeSystemObjectBase type)
-            : base(type.Name)
+        protected NoopType(string name)
+            : base(name)
         {
         }
 
@@ -67,6 +50,14 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Scalars
         {
             resultValue = runtimeValue;
             return true;
+        }
+    }
+
+    public sealed class NoopDateTime : NoopType
+    {
+        public NoopDateTime()
+            : base("DateTime")
+        {
         }
     }
 }

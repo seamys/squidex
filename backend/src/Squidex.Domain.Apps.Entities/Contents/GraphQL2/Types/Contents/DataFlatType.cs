@@ -6,36 +6,30 @@
 // ==========================================================================
 
 using HotChocolate.Types;
-using Squidex.Domain.Apps.Core.Schemas;
-using Squidex.Domain.Apps.Entities.Schemas;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
 {
-    internal sealed class ContentFieldType : ObjectType
+    public sealed class DataFlatType : ObjectType
     {
         private readonly GraphQLSchemaBuilder builder;
         private readonly SchemaType schemaType;
-        private readonly FieldType fieldType;
 
-        public ContentFieldType(GraphQLSchemaBuilder builder, SchemaType schemaType, FieldType fieldType)
+        public DataFlatType(GraphQLSchemaBuilder builder, SchemaType schemaType)
         {
             this.builder = builder;
             this.schemaType = schemaType;
-            this.fieldType = fieldType;
         }
 
         protected override void Configure(IObjectTypeDescriptor descriptor)
         {
-            descriptor.Name(fieldType.LocalizedType)
-                .Description($"The structure of the {schemaType.DisplayName}/{fieldType} field");
+            descriptor.Name(schemaType.DataFlatType)
+                .Description($"The structure of the {schemaType.DisplayName} flat data type.");
 
-            var partition = builder.ResolvePartition(((IRootField)fieldType.Field).Partitioning);
-
-            foreach (var key in partition.AllKeys)
+            foreach (var fieldType in schemaType.Fields)
             {
                 var field =
-                    descriptor.Field(key.EscapePartition())
-                        .WithSourceName(key)
+                    descriptor.Field(fieldType.FieldName)
+                        .WithSourceName(fieldType.Field.Name)
                         .Description(fieldType.Field.RawProperties.Hints);
 
                 builder.FieldBuilder.Build(field, fieldType);

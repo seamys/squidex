@@ -97,7 +97,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                             .AddValue("iv", true))
                     .AddField("my-datetime",
                         new ContentFieldData()
-                            .AddValue("iv", now))
+                            .AddValue("iv", now.ToGraphQL()))
                     .AddField("my-tags",
                         new ContentFieldData()
                             .AddValue("iv", JsonValue.Array("tag1", "tag2")))
@@ -179,9 +179,9 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             {
                 id = content.Id,
                 version = 1,
-                created = content.Created,
+                created = content.Created.ToGraphQL(),
                 createdBy = "subject:user1",
-                lastModified = content.LastModified,
+                lastModified = content.LastModified.ToGraphQL(),
                 lastModifiedBy = "subject:user2",
                 status = "DRAFT",
                 statusColor = "red",
@@ -196,11 +196,11 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
             {
                 ["gql_2Numbers"] = new
                 {
-                    iv = 22
+                    iv = 22.0
                 },
                 ["gql_2Numbers2"] = new
                 {
-                    iv = 23
+                    iv = 23.0
                 },
                 ["myString"] = new
                 {
@@ -208,11 +208,11 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 },
                 ["myNumber"] = new
                 {
-                    iv = 1
+                    iv = 1.0
                 },
                 ["myNumber2"] = new
                 {
-                    iv = 2
+                    iv = 2.0
                 },
                 ["myBoolean"] = new
                 {
@@ -220,7 +220,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                 },
                 ["myDatetime"] = new
                 {
-                    iv = content.LastModified.ToString()
+                    iv = content.LastModified.ToGraphQL()
                 },
                 ["myJson"] = new
                 {
@@ -255,14 +255,14 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL
                     {
                         new
                         {
-                            nestedNumber = 10,
-                            nestedNumber2 = 11,
+                            nestedNumber = 10.0,
+                            nestedNumber2 = 11.0,
                             nestedBoolean = true
                         },
                         new
                         {
-                            nestedNumber = 20,
-                            nestedNumber2 = 21,
+                            nestedNumber = 20.0,
+                            nestedNumber2 = 21.0,
                             nestedBoolean = false
                         }
                     }

@@ -6,18 +6,16 @@
 // ==========================================================================
 
 using HotChocolate.Types;
-using Squidex.Domain.Apps.Core.Schemas;
-using Squidex.Domain.Apps.Entities.Schemas;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
 {
-    internal sealed class ContentFieldType : ObjectType
+    public sealed class NestedType : ObjectType
     {
         private readonly GraphQLSchemaBuilder builder;
         private readonly SchemaType schemaType;
         private readonly FieldType fieldType;
 
-        public ContentFieldType(GraphQLSchemaBuilder builder, SchemaType schemaType, FieldType fieldType)
+        public NestedType(GraphQLSchemaBuilder builder, SchemaType schemaType, FieldType fieldType)
         {
             this.builder = builder;
             this.schemaType = schemaType;
@@ -26,19 +24,17 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
 
         protected override void Configure(IObjectTypeDescriptor descriptor)
         {
-            descriptor.Name(fieldType.LocalizedType)
-                .Description($"The structure of the {schemaType.DisplayName}/{fieldType} field");
+            descriptor.Name(fieldType.NestedType)
+                .Description($"The structure of the {schemaType.DisplayName}/{fieldType} nested schema");
 
-            var partition = builder.ResolvePartition(((IRootField)fieldType.Field).Partitioning);
-
-            foreach (var key in partition.AllKeys)
+            foreach (var nestedField in fieldType.Fields)
             {
                 var field =
-                    descriptor.Field(key.EscapePartition())
-                        .WithSourceName(key)
-                        .Description(fieldType.Field.RawProperties.Hints);
+                    descriptor.Field(nestedField.FieldName)
+                        .WithSourceName(nestedField.Field.Name)
+                        .Description(nestedField.Field.RawProperties.Hints);
 
-                builder.FieldBuilder.Build(field, fieldType);
+                builder.FieldBuilder.Build(field, nestedField);
             }
         }
     }

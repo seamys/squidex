@@ -12,7 +12,6 @@ using GraphQL;
 using GraphQL.Types;
 using GraphQL.Utilities;
 using Squidex.Domain.Apps.Core.Schemas;
-using Squidex.Infrastructure;
 using Squidex.Infrastructure.ObjectPool;
 using Squidex.Text;
 using GraphQLSchema = GraphQL.Types.Schema;

@@ -45,4 +45,7 @@
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" Link="stylecop.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Contents\GraphQL2\Types\Scalars\" />
+  </ItemGroup>
 </Project>

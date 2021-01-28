@@ -6,42 +6,40 @@
 // ==========================================================================
 
 using System;
+using System.Threading.Tasks;
+using HotChocolate.Language;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Squidex.Infrastructure;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
 {
-    internal sealed class ContentResultType : ObjectType<IResultList<IEnrichedContentEntity>>
+    internal sealed class ContentResultType : ObjectType
     {
-        private readonly string schemaType;
-        private readonly string schemaName;
-        private readonly IType contentType;
+        private readonly SchemaType schemaType;
 
-        public ContentResultType(string schemaType, string schemaName, IType contentType)
+        public ContentResultType(SchemaType schemaType)
         {
             this.schemaType = schemaType;
-            this.schemaName = schemaName;
-            this.contentType = contentType;
         }
 
-        protected override void Configure(IObjectTypeDescriptor<IResultList<IEnrichedContentEntity>> descriptor)
+        protected override void Configure(IObjectTypeDescriptor descriptor)
         {
-            descriptor.Name($"{schemaType}ResultDto")
-                .Description($"List of {schemaName} items and total count.");
+            descriptor.Name(schemaType.ResultType)
+                .Description($"List of {schemaType.DisplayName} items and total count.");
 
-            descriptor.Field(x => x.Total)
+            descriptor.Field("total").Resolve(Resolver(x => x.Total))
                 .Type<NonNullType<LongType>>()
                 .Description("The total count of assets.");
 
             descriptor.Field("items").Resolve(Resolver(x => x))
-                .Type(new ListType(new NonNullType(contentType)))
+                .Type(new NonNullTypeNode(new ListTypeNode(new NonNullTypeNode(new NamedTypeNode(schemaType.ContentType)))))
                 .Description("The contents.");
         }
 
-        private static Func<IResolverContext, T> Resolver<T>(Func<IResultList<IEnrichedContentEntity>, T> resolver)
+        private static FieldResolverDelegate Resolver<T>(Func<IResultList<IEnrichedContentEntity>, T> resolver)
         {
-            return context => resolver(context.Parent<IResultList<IEnrichedContentEntity>>());
+            return context => new ValueTask<object?>(resolver(context.Parent<IResultList<IEnrichedContentEntity>>()));
         }
     }
 }
