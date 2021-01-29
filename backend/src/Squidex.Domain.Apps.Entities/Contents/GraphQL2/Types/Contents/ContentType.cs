@@ -6,21 +6,28 @@
 // ==========================================================================
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using HotChocolate.Language;
 using HotChocolate.Resolvers;
 using HotChocolate.Types;
 using Squidex.Domain.Apps.Core;
 using Squidex.Domain.Apps.Core.ConvertContent;
+using Squidex.Domain.Apps.Core.Schemas;
+using Squidex.Domain.Apps.Entities.Schemas;
+using Squidex.Infrastructure;
+using IField = Squidex.Domain.Apps.Core.Schemas.IField;
 
 namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
 {
     internal sealed class ContentType : ObjectType
     {
+        private readonly GraphQLSchemaBuilder builder;
         private readonly SchemaType schemaType;
 
-        public ContentType(SchemaType schemaType)
+        public ContentType(GraphQLSchemaBuilder builder, SchemaType schemaType)
         {
+            this.builder = builder;
             this.schemaType = schemaType;
         }
 
@@ -28,6 +35,13 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
         {
             descriptor.Name(schemaType.ContentType)
                 .Description($"The structure of a {schemaType.DisplayName} content type.");
+
+            var schemaId = schemaType.Schema.Id;
+
+            descriptor.IsOfType((context, result) =>
+            {
+                return result is IContentEntity content && content.SchemaId.Id == schemaId;
+            });
 
             descriptor.Field("id").Resolve(Id)
                 .Type<NonNullType<StringType>>()
@@ -72,6 +86,44 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
             descriptor.Field("flatData").Resolve(FlatData)
                 .Type(new NonNullTypeNode(new NamedTypeNode(schemaType.DataFlatType)))
                 .Description("The flat content data.");
+
+            descriptor.Interface(new NamedTypeNode("Content"));
+
+            foreach (var other in builder.SchemaTypes.Where(x => IsReferencing(x, schemaType)))
+            {
+                descriptor.Field($"referencing{other.TypeName}Contents").Resolve(QueryReferencing)
+                    .Type(new NonNullTypeNode(new ListTypeNode(new NonNullTypeNode(new NamedTypeNode(other.ContentType)))))
+                    .UseSchemaId(other.Schema.Id)
+                    .UseODataArgs()
+                    .Description($"Query {other.TypeName} content items");
+
+                descriptor.Field($"referencing{other.TypeName}ContentsWithTotal").Resolve(QueryReferencing)
+                    .Type(new NonNullTypeNode(new NamedTypeNode(other.ResultType)))
+                    .UseSchemaId(other.Schema.Id)
+                    .UseODataArgs()
+                    .Description($"Query {other.TypeName} content items with total count.");
+            }
+        }
+
+        private static bool IsReferencing(SchemaType other, SchemaType schema)
+        {
+            return other.Schema.SchemaDef.Fields.Any(x => IsReferencing(x, schema.Schema.Id));
+        }
+
+        private static bool IsReferencing(IField field, DomainId id)
+        {
+            switch (field)
+            {
+                case IField<ReferencesFieldProperties> reference:
+                    return
+                        reference.Properties.SchemaIds == null ||
+                        reference.Properties.SchemaIds.Count == 0 ||
+                        reference.Properties.SchemaIds.Contains(id);
+                case IArrayField arrayField:
+                    return arrayField.Fields.Any(x => IsReferencing(x, id));
+            }
+
+            return false;
         }
 
         private static readonly FieldResolverDelegate Id = Resolver(content => content.Id);
@@ -107,5 +159,14 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
         {
             return context => new ValueTask<object?>(resolver(context.Parent<IEnrichedContentEntity>()));
         }
+
+        private static readonly FieldResolverDelegate QueryReferencing = async context =>
+        {
+            var contentQuery = context.Service<IContentQueryService>();
+
+            var q = Q.Empty.WithODataQuery(context.BuildODataQuery()).WithReference(context.Parent<IEnrichedContentEntity>().Id);
+
+            return await contentQuery.QueryAsync(context.RequestContext(), context.SchemaId(), q);
+        };
     }
 }

@@ -56,9 +56,9 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2
             return (string)context.Field.ContextData[nameof(SchemaId)]!;
         }
 
-        public static IObjectFieldDescriptor UseSchemaId(this IObjectFieldDescriptor field, string name)
+        public static IObjectFieldDescriptor UseSchemaId(this IObjectFieldDescriptor field, DomainId id)
         {
-            field.ConfigureContextData(data => data[nameof(SchemaId)] = name);
+            field.ConfigureContextData(data => data[nameof(SchemaId)] = id.ToString());
 
             return field;
         }

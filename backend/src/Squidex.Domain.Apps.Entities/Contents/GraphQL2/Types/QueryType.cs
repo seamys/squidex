@@ -26,21 +26,19 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types
 
         protected override void Configure(IObjectTypeDescriptor descriptor)
         {
-            ConfigureAssets(descriptor);
-
             foreach (var schema in schemas)
             {
                 ConfigureSchema(descriptor, schema);
             }
+
+            ConfigureAssets(descriptor);
         }
 
         private static void ConfigureSchema(IObjectTypeDescriptor descriptor, SchemaType schemaType)
         {
-            var schemaId = schemaType.Schema.Id.ToString();
-
             descriptor.Field($"find{schemaType.TypeName}Content").Resolve(FindContent)
                 .Type(new NamedTypeNode(schemaType.ContentType))
-                .UseSchemaId(schemaId)
+                .UseSchemaId(schemaType.Schema.Id)
                 .UseId()
                 .Argument("version", arg => arg
                     .Type<IntType>()
@@ -49,13 +47,13 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types
 
             descriptor.Field($"query{schemaType.TypeName}Contents").Resolve(QueryContents)
                 .Type(new NonNullTypeNode(new ListTypeNode(new NonNullTypeNode(new NamedTypeNode(schemaType.ContentType)))))
-                .UseSchemaId(schemaId)
+                .UseSchemaId(schemaType.Schema.Id)
                 .UseODataArgs()
-                .Description("Query assets.");
+                .Description($"Query {schemaType.TypeName} content items.");
 
             descriptor.Field($"query{schemaType.TypeName}ContentsWithTotal").Resolve(QueryContents)
                 .Type(new NonNullTypeNode(new NamedTypeNode(schemaType.ResultType)))
-                .UseSchemaId(schemaId)
+                .UseSchemaId(schemaType.Schema.Id)
                 .UseODataArgs()
                 .Description($"Query {schemaType.TypeName} content items with total count.");
         }

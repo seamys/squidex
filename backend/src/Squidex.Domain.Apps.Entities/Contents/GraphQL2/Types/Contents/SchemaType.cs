@@ -19,7 +19,7 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types.Contents
     {
         public string DisplayName { get; set; } = Schema.DisplayName();
 
-        public string ContentType { get; } = $"{TypeName}Dto";
+        public string ContentType { get; } = TypeName.SafeTypeName();
 
         public string DataType { get; } = $"{TypeName}DataDto";
 

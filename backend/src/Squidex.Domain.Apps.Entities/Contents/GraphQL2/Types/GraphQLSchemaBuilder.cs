@@ -26,8 +26,6 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types
         private PartitionResolver partitionResolver;
 #pragma warning restore IDE0044 // Add readonly modifier
 
-        public ISchemaBuilder? CurrentBuilder { get; private set; }
-
         public IReadOnlyList<SchemaType> SchemaTypes { get; }
 
         public ContentFieldBuilder FieldBuilder { get; }
@@ -48,9 +46,12 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types
 
         public void BuildSchema(ISchemaBuilder builder)
         {
-            CurrentBuilder = builder;
+            if (SchemaTypes.Any())
+            {
+                builder.AddType(new ReferencesUnionType("AllContents", SchemaTypes));
+            }
 
-            builder.AddType(new ReferencesUnionType("AllContents", SchemaTypes));
+            builder.AddType(new ContentInterfaceType());
 
             foreach (var schemaType in SchemaTypes)
             {
@@ -71,15 +72,13 @@ namespace Squidex.Domain.Apps.Entities.Contents.GraphQL2.Types
                     }
                 }
 
-                builder.AddType(new ContentType(schemaType));
+                builder.AddType(new ContentType(this, schemaType));
                 builder.AddType(new ContentResultType(schemaType));
                 builder.AddType(new DataType(schemaType));
                 builder.AddType(new DataFlatType(this, schemaType));
             }
 
             builder.AddQueryType(new QueryType(SchemaTypes));
-
-            CurrentBuilder = null;
         }
 
         public string GetUnionTypeName(FieldType fieldType)
