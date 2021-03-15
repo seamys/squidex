@@ -50,6 +50,8 @@
     "ngx-doc-viewer": "^1.4.0",
     "oidc-client": "1.10.1",
     "pikaday": "1.8.2",
+    "primeicons": "^4.1.0",
+    "primeng": "^11.3.1",
     "progressbar.js": "1.1.0",
     "prop-types": "^15.7.2",
     "react": "17.0.1",

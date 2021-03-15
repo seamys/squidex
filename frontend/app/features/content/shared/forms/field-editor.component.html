@@ -60,7 +60,7 @@
 							<input class="form-control" type="number" [formControl]="editorControl" [placeholder]="field.displayPlaceholder">
 						</ng-container>
 						<ng-container *ngSwitchCase="'Stars'">
-							<sqx-stars [formControl]="editorControl" [maximumStars]="field.rawProperties.maxValue"></sqx-stars>
+							<p-rating [formControl]="editorControl" [stars]="field.rawProperties.maxValue || 5"></p-rating>
 						</ng-container>
 						<ng-container *ngSwitchCase="'Dropdown'">
 							<select class="custom-select" [formControl]="editorControl">

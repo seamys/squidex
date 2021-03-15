@@ -12,6 +12,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ColorPickerModule } from 'ngx-color-picker';
+import { RatingModule } from 'primeng/rating';
 import { AnalyticsService, AutocompleteComponent, AvatarComponent, CachingInterceptor, CanDeactivateGuard, CheckboxGroupComponent, ClipboardService, CodeComponent, CodeEditorComponent, ColorPickerComponent, ConfirmClickDirective, ControlErrorsComponent, CopyDirective, DarkenPipe, DatePipe, DateTimeEditorComponent, DayOfWeekPipe, DayPipe, DialogRendererComponent, DialogService, DisplayNamePipe, DropdownComponent, DurationPipe, EditableTitleComponent, ExternalLinkDirective, FileDropDirective, FileSizePipe, FocusOnInitDirective, FormAlertComponent, FormErrorComponent, FormHintComponent, FromNowPipe, FullDateTimePipe, HighlightPipe, HoverBackgroundDirective, IFrameEditorComponent, ImageSourceDirective, IndeterminateValueDirective, ISODatePipe, KeysPipe, KNumberPipe, LanguageSelectorComponent, LightenPipe, ListViewComponent, LoadingInterceptor, LoadingService, LocalizedInputComponent, LocalStoreService, MarkdownInlinePipe, MarkdownPipe, MessageBus, ModalDialogComponent, ModalDirective, ModalPlacementDirective, MoneyPipe, MonthPipe, OnboardingService, OnboardingTooltipComponent, PagerComponent, PanelComponent, PanelContainerDirective, ParentLinkDirective, PopupLinkDirective, ProgressBarComponent, ResizedDirective, ResizeService, ResourceLoaderService, RootViewComponent, SafeHtmlPipe, SafeUrlPipe, ScrollActiveDirective, ShortcutComponent, ShortcutService, ShortDatePipe, ShortTimePipe, StarsComponent, StatusIconComponent, StopClickDirective, SyncScollingDirective, SyncWidthDirective, TabRouterlinkDirective, TagEditorComponent, TemplateWrapperDirective, TempService, TitleComponent, TitleService, ToggleComponent, TooltipDirective, TransformInputDirective, TranslatePipe, VideoPlayerComponent } from './declarations';
 
 @NgModule({
@@ -19,7 +20,8 @@ import { AnalyticsService, AutocompleteComponent, AvatarComponent, CachingInterc
         ColorPickerModule,
         CommonModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        RatingModule
     ],
     declarations: [
         AutocompleteComponent,
@@ -156,6 +158,7 @@ import { AnalyticsService, AutocompleteComponent, AvatarComponent, CachingInterc
         ParentLinkDirective,
         PopupLinkDirective,
         ProgressBarComponent,
+        RatingModule,
         ReactiveFormsModule,
         ResizedDirective,
         RootViewComponent,
