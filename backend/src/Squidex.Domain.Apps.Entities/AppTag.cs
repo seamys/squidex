@@ -6,17 +6,18 @@
 // ==========================================================================
 
 using System;
+using Fluid.Tags;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Squidex.Domain.Apps.Entities.Contents
+namespace Squidex.Domain.Apps.Entities
 {
-    public sealed class ContentOptions
+    internal abstract class AppTag : ArgumentsTag
     {
-        public int DefaultPageSize { get; set; } = 200;
+        protected IAppProvider AppProvider { get; }
 
-        public int MaxResults { get; set; } = 200;
-
-        public TimeSpan TimeoutFind { get; set; } = TimeSpan.FromSeconds(1);
-
-        public TimeSpan TimeoutQuery { get; set; } = TimeSpan.FromSeconds(5);
+        protected AppTag(IServiceProvider serviceProvider)
+        {
+            AppProvider = serviceProvider.GetRequiredService<IAppProvider>();
+        }
     }
 }
